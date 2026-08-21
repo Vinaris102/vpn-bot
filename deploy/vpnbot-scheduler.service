@@ -1,0 +1,17 @@
+[Unit]
+Description=VPN Bot - subscription expiry scheduler
+After=network.target
+
+[Service]
+Type=simple
+User=vpnbot
+WorkingDirectory=/opt/vpn-bot
+EnvironmentFile=/opt/vpn-bot/.env
+ExecStart=/opt/vpn-bot/venv/bin/python -m app.scheduler
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/vpnbot/scheduler.log
+StandardError=append:/var/log/vpnbot/scheduler.log
+
+[Install]
+WantedBy=multi-user.target

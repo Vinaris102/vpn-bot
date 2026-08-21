@@ -1,0 +1,62 @@
+# Секреты — никогда не должны попасть в образ
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# База данных — данные, а не код
+*.db
+*.db-journal
+*.sqlite3
+data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Контроль версий и IDE
+.git/
+.gitignore
+.gitattributes
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Логи
+*.log
+logs/
+
+# Документация и тесты (не нужны в образе)
+deploy/
+README.md
+*.md
+tests/
+docs/
+
+# Временные файлы
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Docker-специфичные
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+.docker/
+
+# Системные
+*.pid
+*.lock

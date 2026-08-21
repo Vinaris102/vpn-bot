@@ -1,0 +1,17 @@
+[Unit]
+Description=VPN Bot - YooKassa webhook server (FastAPI/uvicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=vpnbot
+WorkingDirectory=/opt/vpn-bot
+EnvironmentFile=/opt/vpn-bot/.env
+ExecStart=/opt/vpn-bot/venv/bin/uvicorn app.webhook_server:app --host 127.0.0.1 --port 8080
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/vpnbot/webhook.log
+StandardError=append:/var/log/vpnbot/webhook.log
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vpnbot:latest
+    container_name: vpnbot-bot
+    command: python -m app.bot
+    env_file:
+      - .env
+    environment:
+      # Абсолютный путь в volume — переживает пересборку и обновление образа
+      DATABASE_URL: sqlite+aiosqlite:////app/data/vpnbot.db
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - vpnbot-network
+
+  webhook:
+    image: vpnbot:latest
+    container_name: vpnbot-webhook
+    command: uvicorn app.webhook_server:app --host 0.0.0.0 --port 8080
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:////app/data/vpnbot.db
+    volumes:
+      - ./data:/app/data
+    ports:
+      # Слушаем ТОЛЬКО на localhost хоста — наружу в интернет отдаёт nginx
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - vpnbot-network
+
+  scheduler:
+    image: vpnbot:latest
+    container_name: vpnbot-scheduler
+    command: python -m app.scheduler
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:////app/data/vpnbot.db
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - vpnbot-network
+
+# Создаём отдельную сеть для сервисов
+networks:
+  vpnbot-network:
+    driver: bridge

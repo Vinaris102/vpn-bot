@@ -1,0 +1,17 @@
+[Unit]
+Description=VPN Bot - Telegram bot process
+After=network.target
+
+[Service]
+Type=simple
+User=vpnbot
+WorkingDirectory=/opt/vpn-bot
+EnvironmentFile=/opt/vpn-bot/.env
+ExecStart=/opt/vpn-bot/venv/bin/python -m app.bot
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/vpnbot/bot.log
+StandardError=append:/var/log/vpnbot/bot.log
+
+[Install]
+WantedBy=multi-user.target
