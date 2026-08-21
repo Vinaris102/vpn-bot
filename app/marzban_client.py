@@ -20,7 +20,7 @@ class MarzbanClient:
     async def _get_token(self) -> str:
         if self._token:
             return self._token
-        async with httpx.AsyncClient(verify=True) as client:
+        async with httpx.AsyncClient(verify=False) as client:
             resp = await client.post(
                 f"{self.base_url}/api/admin/token",
                 data={
@@ -47,7 +47,7 @@ class MarzbanClient:
             "data_limit": 0,  # 0 = без ограничения по трафику
             "status": "active",
         }
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(verify=False) as client:  # <-- Добавлено verify=False
             resp = await client.post(
                 f"{self.base_url}/api/user",
                 json=payload,
@@ -57,7 +57,7 @@ class MarzbanClient:
             return resp.json()
 
     async def user_exists(self, username: str) -> bool:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(verify=False) as client:  # <-- Добавлено verify=False
             resp = await client.get(
                 f"{self.base_url}/api/user/{username}",
                 headers=await self._headers(),
@@ -70,7 +70,7 @@ class MarzbanClient:
     async def get_user_info(self, username: str) -> dict | None:
         """Возвращает сырые данные пользователя из Marzban (для профиля:
         трафик, лимит, статус) или None, если пользователя нет."""
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(verify=False) as client:  # <-- Добавлено verify=False
             resp = await client.get(
                 f"{self.base_url}/api/user/{username}",
                 headers=await self._headers(),
@@ -83,7 +83,7 @@ class MarzbanClient:
     async def extend_user(self, username: str, days: int) -> dict:
         """Продлевает существующего пользователя на days дней от текущей даты
         окончания (если она в будущем) или от сейчас (если истекла)."""
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(verify=False) as client:  # <-- Добавлено verify=False
             headers = await self._headers()
             current = await client.get(f"{self.base_url}/api/user/{username}", headers=headers)
             current.raise_for_status()
@@ -112,7 +112,7 @@ class MarzbanClient:
         return f"{self.base_url}{raw_sub_url}"
 
     async def get_subscription_link(self, username: str) -> str:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(verify=False) as client:  # <-- Добавлено verify=False
             resp = await client.get(
                 f"{self.base_url}/api/user/{username}",
                 headers=await self._headers(),
@@ -128,7 +128,7 @@ class MarzbanClient:
         """Отзывает старую ссылку на подписку и выдаёт новую (новый UUID),
         не трогая срок действия и лимиты. Полезно, если старая ссылка
         перестала открываться (например, была скомпрометирована/заблокирована)."""
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(verify=False) as client:  # <-- Добавлено verify=False
             resp = await client.post(
                 f"{self.base_url}/api/user/{username}/revoke_sub",
                 headers=await self._headers(),
@@ -138,7 +138,7 @@ class MarzbanClient:
             return self._resolve_sub_url(data["subscription_url"])
 
     async def disable_user(self, username: str) -> None:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(verify=False) as client:  # <-- Добавлено verify=False
             await client.put(
                 f"{self.base_url}/api/user/{username}",
                 json={"status": "disabled"},

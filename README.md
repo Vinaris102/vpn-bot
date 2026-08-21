@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # VPN Telegram-бот с оплатой по СБП/карте
 
 ## Состав проекта
@@ -345,3 +346,7 @@ pip install -r requirements.txt
 3. Заменить SQLite на PostgreSQL при росте нагрузки (`database_url` в config)
 4. Добавить логирование ошибок / алерты в Telegram админам при сбоях
 5. Добавить команду /admin для просмотра активных подписок (опционально)
+=======
+# vpn-bot
+vpn-bot
+>>>>>>> 0c5e512ddce4b7d85227e19e2c829484acf243df
