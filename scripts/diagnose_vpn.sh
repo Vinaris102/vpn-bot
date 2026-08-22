@@ -27,19 +27,26 @@ fi
 echo
 
 echo "== 2. Статус самого Marzban/Xray =="
-if command -v docker &>/dev/null && docker ps --format '{{.Names}}' 2>/dev/null | grep -qi marzban; then
-    STATUS=$(docker inspect -f '{{.State.Status}}' marzban 2>/dev/null || echo "unknown")
+MARZBAN_CONTAINER=""
+if command -v docker &>/dev/null; then
+    # Имя контейнера может быть не буквально "marzban" (например, marzban-marzban-1,
+    # если Marzban поднят через docker-compose) — ищем ЛЮБОЙ контейнер с "marzban" в имени
+    MARZBAN_CONTAINER=$(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -i marzban | head -n1)
+fi
+
+if [ -n "$MARZBAN_CONTAINER" ]; then
+    STATUS=$(docker inspect -f '{{.State.Status}}' "$MARZBAN_CONTAINER" 2>/dev/null || echo "unknown")
     if [ "$STATUS" = "running" ]; then
-        ok "Контейнер marzban запущен"
+        ok "Контейнер '$MARZBAN_CONTAINER' запущен"
     else
-        fail "Контейнер marzban НЕ запущен (статус: $STATUS)"
-        echo "  Исправление: docker restart marzban && docker logs --tail 50 marzban"
+        fail "Контейнер '$MARZBAN_CONTAINER' НЕ запущен (статус: $STATUS)"
+        echo "  Исправление: docker restart $MARZBAN_CONTAINER && docker logs --tail 50 $MARZBAN_CONTAINER"
     fi
 elif systemctl is-active --quiet marzban 2>/dev/null; then
     ok "Служба marzban активна (systemd)"
 else
     fail "Marzban не выглядит запущенным ни как Docker-контейнер, ни как systemd-служба"
-    echo "  Проверьте вручную: systemctl status marzban  ИЛИ  docker ps -a | grep marzban"
+    echo "  Проверьте вручную: docker ps -a  (ищите контейнер, связанный с Marzban)"
 fi
 echo
 
@@ -57,7 +64,16 @@ fi
 echo
 
 echo "== 4. Порт 443 доступен СНАРУЖИ (не только локально) =="
-DOMAIN=$(grep -oP '(?<=MARZBAN_URL=https://)[^:/]+' /opt/vpn-bot/.env 2>/dev/null || echo "")
+DOMAIN=""
+for ENV_PATH in "./.env" "/root/vpn-bot/.env" "/opt/vpn-bot/.env" "$HOME/vpn-bot/.env"; do
+    if [ -f "$ENV_PATH" ]; then
+        FOUND=$(grep -oP '(?<=MARZBAN_URL=https://)[^:/]+' "$ENV_PATH" 2>/dev/null || echo "")
+        if [ -n "$FOUND" ]; then
+            DOMAIN="$FOUND"
+            break
+        fi
+    fi
+done
 if [ -n "$DOMAIN" ]; then
     if command -v curl &>/dev/null; then
         # Не проверяем VLESS-протокол (для этого нужен xray-клиент), но проверяем,
